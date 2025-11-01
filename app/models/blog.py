@@ -8,11 +8,14 @@ class BlogModel(Base):
     __tablename__ = "blogs"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    topic = Column(String(50), nullable=False, unique=True)
+    description = Column(String(250), nullable=False)
     title = Column(String(50), nullable=False)
-    content = Column(String(150), nullable=False)
-    seo_description = Column(String(50), nullable=False)
+    content = Column(String(1000), nullable=False)
+    seo_description = Column(String(250), nullable=False)
+    image_url = Column(String(150), nullable=True)
+    category_id = Column(String, ForeignKey("categories.id"))
+    category = relationship("CategoryModel", back_populates="blogs")
     user_id = Column(String, ForeignKey("users.id"))
-    user = relationship("User", back_populates="blogs")
+    user = relationship("UserModel", back_populates="blogs")
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)

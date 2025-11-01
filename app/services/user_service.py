@@ -15,7 +15,12 @@ def register_user(registerDTO: RegisterDTO, db: Session = Depends(get_db)):
 
     hashed_password = get_password_hash(registerDTO.password)
 
-    new_user = UserModel(email=registerDTO.email, password=hashed_password)
+    new_user = UserModel(
+        email=registerDTO.email,
+        password=hashed_password, 
+        name=registerDTO.name,
+        last_name=registerDTO.last_name, 
+     )
 
     db.add(new_user)
     db.commit()

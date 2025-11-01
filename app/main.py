@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from app.dtos.create_blog import CreateBlog
 from app.dtos.login_dto import LoginDTO
 from app.dtos.response_login_dto import ResponseLoginDTO
+from app.services import blog_service
 from app.services.user_service import register_user as register_user_service
 from app.dtos.register_dto import RegisterDTO
 from app.config.db_connection import get_db
@@ -14,10 +15,17 @@ from app.auth.dependencies import get_current_user
 from app.models.user import UserModel
 from typing import List
 from app.models.blog import BlogModel
+from app.models.categories import CategoryModel
 from app.dtos.blog_response_dto import BlogResponseDTO
+from app.dtos.create_category_dto import CreateCategoryDTO
+from app.services.category_service import create_category 
+from app.services.blog_service import create_blog
+from app.config.db_connection import engine,Base
 
 load_dotenv()
 
+
+Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Blog IA API",
     description="API para creacion de blogs con IA",
@@ -33,7 +41,7 @@ def register_user(register_dto: RegisterDTO, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal Server Error " + str(e))
 
 
 @app.post("/login")
@@ -55,11 +63,12 @@ def login_for_access_token(
 @app.post("/blogs", status_code=201)
 async def create_new_blog(
     blog_dto: CreateBlog,
-    db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     try:
-        blog = await blog_service.create_blog(
+        print("Entro al endpoint")
+        blog = await create_blog(
             blog_dto, current_user.id, db
         )
         return blog
@@ -70,8 +79,24 @@ async def create_new_blog(
 
 
 @app.get("/blogs/me", response_model=List[BlogResponseDTO])
-def get_my_blogs(
+async def get_my_blogs(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
     return blog_service.get_blogs_by_user(db, user_id=current_user.id)
+
+
+@app.post("/category", status_code=201)
+async def create_new_category(
+    category_dto: CreateCategoryDTO,
+    db: Session = Depends(get_db)
+):
+    try:
+        category = await create_category(
+            category_dto.name, db
+        )
+        return category
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )

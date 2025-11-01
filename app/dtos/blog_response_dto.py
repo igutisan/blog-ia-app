@@ -2,7 +2,8 @@ from pydantic import BaseModel
 
 class BlogResponseDTO(BaseModel):
     id: str
-    topic: str
+    # category: str
+    description: str
     title: str
     content: str
     seo_description: str

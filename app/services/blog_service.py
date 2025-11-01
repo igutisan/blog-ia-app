@@ -1,27 +1,36 @@
 from app.dtos.create_blog import CreateBlog
 from app.models.blog import BlogModel
-
+from app.models.categories import CategoryModel
+from sqlalchemy.orm import Session
+from app.services.genia_service import generate_blog_content
+import asyncio
+import uuid
+import json
+import re
+from typing import List
 
 async def create_blog(
     blog_dto: CreateBlog, user_id: str, db: Session
 ) -> BlogModel:
     
     try:
-        
+
+        print("Entro al try")
         content_task = asyncio.to_thread(
-            generate_blog_content, blog_dto.topic
+            generate_blog_content, blog_dto.description
         )
 
+        print("Entro al try2")
         results = await asyncio.gather(content_task)
-
         generated_content_str = results[0]
-
+        print(generated_content_str)
         try:
             generated_data = json.loads(
                 clean_llm_json_response(generated_content_str)
             )
+            print(generated_data)
             enhanced_title = generated_data.get("title", "")
-            enhanced_content = generated_data.get("content", "")
+            enhanced_content = generated_data.get("body", "")
             enhanced_seo_description = generated_data.get("seoDescription", "")
         except (json.JSONDecodeError, AttributeError):
             enhanced_content = "Could not generate enhanced content."
@@ -35,9 +44,15 @@ async def create_blog(
         enhanced_seo_description = "(AI enhancement failed)"
         return None
 
+    category = db.query(CategoryModel).filter(CategoryModel.name == blog_dto.category).first()
+    
+    if not category:
+        raise ValueError("Category not found")
+    
     new_model = BlogModel(
         id=str(uuid.uuid4()),
-        topic=blog_dto.topic,
+        category=category,
+        description=blog_dto.description,
         title=enhanced_title,
         content=enhanced_content,
         seo_description=enhanced_seo_description,

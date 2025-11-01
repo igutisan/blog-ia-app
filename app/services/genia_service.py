@@ -8,6 +8,7 @@ dotenv.load_dotenv()
 
 
 def generate_blog_content(topic: str):
+    print("Entro al generate_blog_content")
     system_prompt = f"""
 Eres un experto en redacción de contenidos y marketing digital especializado en **copywriting para blogs de e-commerce**.
 
@@ -16,8 +17,8 @@ Tu tarea es crear **artículos de blog completos y optimizados para SEO** a part
 🎯 **Objetivo:** Generar un artículo atractivo, informativo y persuasivo que conecte con el público objetivo y posicione bien en buscadores.
 
 🧠 **Instrucciones:**
-- Redacta un **título principal (H1)** llamativo y natural, que despierte interés y contenga la palabra clave principal.
-- Escribe un **cuerpo** de entre **400 y 600 palabras**, dividido en párrafos claros y bien estructurados.
+- Redacta un **título principal (H1)** llamativo y natural, que despierte interés y contenga la palabra clave principal **50 caracteres maximo** .
+- Escribe un **cuerpo** de entre **400 y 600 caracteres**, dividido en párrafos claros y bien estructurados.
 - Mantén un tono **cercano, profesional y persuasivo**, evitando sonar artificial o sobreoptimizado.
 - Menciona beneficios, soluciones o consejos relacionados con el tema.
 - Incluye **palabras clave relevantes** de forma orgánica (sin forzar).
@@ -46,6 +47,7 @@ Tema: {topic}
         model="gemini-2.5-flash",
         contents=[system_prompt],
     )
+    print(response.text)
     return response.text
 
 
