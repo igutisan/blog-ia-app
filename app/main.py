@@ -18,9 +18,11 @@ from app.models.blog import BlogModel
 from app.models.categories import CategoryModel
 from app.dtos.blog_response_dto import BlogResponseDTO
 from app.dtos.create_category_dto import CreateCategoryDTO
-from app.services.category_service import create_category 
-from app.services.blog_service import create_blog
+from app.services.category_service import create_category, get_categories
+from app.services.blog_service import create_blog, get_blogs
 from app.config.db_connection import engine,Base
+from app.dtos.category_reponse_dto import CategoryResponseDTO
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -30,6 +32,20 @@ app = FastAPI(
     title="Blog IA API",
     description="API para creacion de blogs con IA",
     version="0.1.0",
+)
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",   
+    "https://midominio.com",   
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          
+    allow_credentials=True,         
+    allow_methods=["*"],            
+    allow_headers=["*"],            
 )
 
 
@@ -60,6 +76,21 @@ def login_for_access_token(
     return ResponseLoginDTO(token=access_token)
 
 
+@app.get("/me")
+def login_for_access_token(
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return current_user
+
+
 @app.post("/blogs", status_code=201)
 async def create_new_blog(
     blog_dto: CreateBlog,
@@ -67,7 +98,7 @@ async def create_new_blog(
     db: Session = Depends(get_db),
 ):
     try:
-        print("Entro al endpoint")
+
         blog = await create_blog(
             blog_dto, current_user.id, db
         )
@@ -77,9 +108,16 @@ async def create_new_blog(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         )
 
+@app.get("/blogs", response_model=List[BlogResponseDTO])
+def get_blog(
+    db: Session = Depends(get_db)
+):
+    return get_blogs(db)
+
+
 
 @app.get("/blogs/me", response_model=List[BlogResponseDTO])
-async def get_my_blogs(
+def get_my_blogs(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
@@ -100,3 +138,9 @@ async def create_new_category(
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         )
+
+@app.get("/categories", response_model=List[CategoryResponseDTO])
+async def get_categ(
+    db: Session = Depends(get_db),
+):
+    return await get_categories(db)

@@ -69,6 +69,12 @@ async def create_blog(
 def get_blogs_by_user(db: Session, user_id: str) -> List[BlogModel]:
     return db.query(BlogModel).filter(BlogModel.user_id == user_id).all()
 
+def get_blogs(db: Session) -> List[BlogModel]:
+    return db.query(BlogModel).all()
+
+
+async def get_blogs_by_category(category_id: str, db: Session) -> List[BlogModel] | None:
+    return db.query(BlogModel).filter(CategoryModel.id == category_id).all()
 
 def clean_llm_json_response(raw_response: str) -> str:
     match = re.search(r"```json\s*(\{.*?\})\s*```", raw_response, re.DOTALL)

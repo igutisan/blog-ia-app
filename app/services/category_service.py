@@ -17,5 +17,10 @@ async def create_category(category_name: str, db: Session) -> CategoryModel | No
         print(f"Error creating category: {e}")
         return None
 
-def get_categories(db: Session) -> List[CategoryModel]:
+async def get_categories(db: Session) -> List[CategoryModel]:
     return db.query(CategoryModel).all()
+
+# async def get_category_by_name(category_id: int, db: Session) -> CategoryModel | None:
+#     return db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
+
+
