@@ -19,7 +19,7 @@ from app.models.categories import CategoryModel
 from app.dtos.blog_response_dto import BlogResponseDTO
 from app.dtos.create_category_dto import CreateCategoryDTO
 from app.services.category_service import create_category, get_categories
-from app.services.blog_service import create_blog, get_blogs
+from app.services.blog_service import create_blog,get_blogs_by_user_and_id  ,get_blogs
 from app.config.db_connection import engine,Base
 from app.dtos.category_reponse_dto import CategoryResponseDTO
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +36,7 @@ app = FastAPI(
 
 origins = [
     "http://localhost",
-    "http://localhost:8080",   
+    "http://localhost:3000",   
     "https://midominio.com",   
 ]
 
@@ -66,6 +66,7 @@ def login_for_access_token(
 ):
     login_dto = LoginDTO(email=form_data.username, password=form_data.password)
     user = auth_service.authenticate_user(db, login_dto)
+    print("USer logueado: ",user)
     if not user:
         raise HTTPException(
             status_code=401,
@@ -73,7 +74,8 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.email})
-    return ResponseLoginDTO(token=access_token)
+    userRes = {"id": user.id, "name": user.name, "last_name": user.last_name, "email": user.email}
+    return ResponseLoginDTO( user=userRes, token=access_token )
 
 
 @app.get("/me")
@@ -109,10 +111,18 @@ async def create_new_blog(
         )
 
 @app.get("/blogs", response_model=List[BlogResponseDTO])
-def get_blog(
+def get_blogs_co(
     db: Session = Depends(get_db)
 ):
     return get_blogs(db)
+
+@app.get("/blogs/{blog_id}", response_model=BlogResponseDTO)
+def get_blog(
+    blog_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user)
+):
+    return get_blogs_by_user_and_id(db, current_user.id, blog_id)
 
 
 

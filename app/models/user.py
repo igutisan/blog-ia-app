@@ -1,4 +1,5 @@
 import uuid
+from pydantic import BaseModel
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from app.config.db_connection import Base, engine

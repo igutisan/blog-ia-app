@@ -1,3 +1,4 @@
+from app.dtos.blog_response_dto import BlogResponseDTO
 from app.dtos.create_blog import CreateBlog
 from app.models.blog import BlogModel
 from app.models.categories import CategoryModel
@@ -8,6 +9,8 @@ import uuid
 import json
 import re
 from typing import List
+from fastapi import HTTPException
+from fastapi import status
 
 async def create_blog(
     blog_dto: CreateBlog, user_id: str, db: Session
@@ -68,6 +71,16 @@ async def create_blog(
 
 def get_blogs_by_user(db: Session, user_id: str) -> List[BlogModel]:
     return db.query(BlogModel).filter(BlogModel.user_id == user_id).all()
+
+def get_blogs_by_user_and_id(db: Session, user_id: str, blog_id: str) -> BlogModel | None  :
+   
+    blog = db.query(BlogModel).filter(BlogModel.user_id == user_id).filter(BlogModel.id == blog_id).first()
+    if not blog:  
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Blog not found"
+        )
+    return blog
 
 def get_blogs(db: Session) -> List[BlogModel]:
     return db.query(BlogModel).all()

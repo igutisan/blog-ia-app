@@ -5,7 +5,7 @@ import re
 class RegisterDTO(BaseModel):
     
     name: str = Field(..., description="Nombre del usuario")
-    lastName: str = Field(..., description="Apellido del usuario")
+    last_name: str = Field(..., description="Apellido del usuario")
     email: EmailStr = Field(..., description="Correo electrónico válido del usuario")
     password: str = Field(
         ...,
