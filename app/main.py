@@ -19,7 +19,7 @@ from app.models.categories import CategoryModel
 from app.dtos.blog_response_dto import BlogResponseDTO
 from app.dtos.create_category_dto import CreateCategoryDTO
 from app.services.category_service import create_category, get_categories
-from app.services.blog_service import create_blog,get_blogs_by_user_and_id  ,get_blogs
+from app.services.blog_service import create_blog,get_blog_by_id,get_blogs
 from app.config.db_connection import engine,Base
 from app.dtos.category_reponse_dto import CategoryResponseDTO
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,7 +93,7 @@ def login_for_access_token(
     return current_user
 
 
-@app.post("/blogs", status_code=201)
+@app.post("/blog", status_code=201)
 async def create_new_blog(
     blog_dto: CreateBlog,
     current_user: UserModel = Depends(get_current_user),
@@ -119,10 +119,9 @@ def get_blogs_co(
 @app.get("/blogs/{blog_id}", response_model=BlogResponseDTO)
 def get_blog(
     blog_id: str,
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    return get_blogs_by_user_and_id(db, current_user.id, blog_id)
+    return get_blog_by_id(db, blog_id)
 
 
 

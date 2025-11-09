@@ -6,9 +6,9 @@ from typing import List
 from sqlalchemy.orm import Session
 
 
-async def create_category(category_name: str, db: Session) -> CategoryModel | None:
+async def create_category(category_id: str, db: Session) -> CategoryModel | None:
     try:
-        new_category = CategoryModel(name=category_name)
+        new_category = CategoryModel(id=category_id)
         db.add(new_category)
         db.commit()
         db.refresh(new_category)

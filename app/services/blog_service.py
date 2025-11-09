@@ -11,6 +11,7 @@ import re
 from typing import List
 from fastapi import HTTPException
 from fastapi import status
+from app.models.user import UserModel
 
 async def create_blog(
     blog_dto: CreateBlog, user_id: str, db: Session
@@ -47,7 +48,7 @@ async def create_blog(
         enhanced_seo_description = "(AI enhancement failed)"
         return None
 
-    category = db.query(CategoryModel).filter(CategoryModel.name == blog_dto.category).first()
+    category = db.query(CategoryModel).filter(CategoryModel.id == blog_dto.category).first()
     
     if not category:
         raise ValueError("Category not found")
@@ -59,6 +60,7 @@ async def create_blog(
         title=enhanced_title,
         content=enhanced_content,
         seo_description=enhanced_seo_description,
+        image_url=blog_dto.image_url,
         user_id=user_id,
     )
 
@@ -72,18 +74,40 @@ async def create_blog(
 def get_blogs_by_user(db: Session, user_id: str) -> List[BlogModel]:
     return db.query(BlogModel).filter(BlogModel.user_id == user_id).all()
 
-def get_blogs_by_user_and_id(db: Session, user_id: str, blog_id: str) -> BlogModel | None  :
+def get_blog_by_id(db: Session,  blog_id: str) -> BlogResponseDTO | None  :
    
-    blog = db.query(BlogModel).filter(BlogModel.user_id == user_id).filter(BlogModel.id == blog_id).first()
+    blog = db.query(BlogModel).filter(BlogModel.id == blog_id).first()
     if not blog:  
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Blog not found"
         )
-    return blog
+    user = db.query(UserModel).filter(UserModel.id == blog.user_id).first()
+    blog_response = {
+        "id": blog.id,
+        "category": blog.category.name,
+        "title": blog.title,
+        "content": blog.content,
+        "seo_description": blog.seo_description,
+        "image_url": blog.image_url,
+        "author": user.name + " " + user.last_name,
+    }
+    return blog_response
 
-def get_blogs(db: Session) -> List[BlogModel]:
-    return db.query(BlogModel).all()
+def get_blogs(db: Session) -> List[BlogResponseDTO]:
+    blogs = db.query(BlogModel).all()
+    blog_response = []
+    for blog in blogs:
+        blog_response.append({
+            "id": blog.id,
+            "category": blog.category.name,
+            "title": blog.title,
+            "content": blog.content,
+            "seo_description": blog.seo_description,
+            "image_url": blog.image_url,
+            "author": blog.user.name + " " + blog.user.last_name,
+        })
+    return blog_response
 
 
 async def get_blogs_by_category(category_id: str, db: Session) -> List[BlogModel] | None:
