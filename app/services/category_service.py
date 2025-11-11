@@ -6,9 +6,9 @@ from typing import List
 from sqlalchemy.orm import Session
 
 
-async def create_category(category_id: str, db: Session) -> CategoryModel | None:
+async def create_category(category_name: str, db: Session) -> CategoryModel | None:
     try:
-        new_category = CategoryModel(id=category_id)
+        new_category = CategoryModel(name=category_name)
         db.add(new_category)
         db.commit()
         db.refresh(new_category)
@@ -20,7 +20,10 @@ async def create_category(category_id: str, db: Session) -> CategoryModel | None
 async def get_categories(db: Session) -> List[CategoryModel]:
     return db.query(CategoryModel).all()
 
-# async def get_category_by_name(category_id: int, db: Session) -> CategoryModel | None:
-#     return db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
+async def get_category_by_name(category_name: str, db: Session) -> CategoryModel | None:
+    return db.query(CategoryModel).filter(CategoryModel.name == category_name).first()
+
+async def get_category_by_id(category_id: int, db: Session) -> CategoryModel | None:
+    return db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
 

@@ -18,11 +18,12 @@ from app.models.blog import BlogModel
 from app.models.categories import CategoryModel
 from app.dtos.blog_response_dto import BlogResponseDTO
 from app.dtos.create_category_dto import CreateCategoryDTO
-from app.services.category_service import create_category, get_categories
-from app.services.blog_service import create_blog,get_blog_by_id,get_blogs
+from app.services.category_service import create_category, get_categories, get_category_by_id
+from app.services.blog_service import create_blog,get_blog_by_id,get_blogs,get_blogs_by_user,get_blogs_by_category
 from app.config.db_connection import engine,Base
 from app.dtos.category_reponse_dto import CategoryResponseDTO
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 load_dotenv()
 
@@ -112,11 +113,15 @@ async def create_new_blog(
 
 @app.get("/blogs", response_model=List[BlogResponseDTO])
 def get_blogs_co(
+    category: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
+    print("LLego ",category)
+    if(category):
+        return get_blogs_by_category(db, category)
     return get_blogs(db)
 
-@app.get("/blogs/{blog_id}", response_model=BlogResponseDTO)
+@app.get("/blog/{blog_id}", response_model=BlogResponseDTO)
 def get_blog(
     blog_id: str,
     db: Session = Depends(get_db)
@@ -130,7 +135,8 @@ def get_my_blogs(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    return blog_service.get_blogs_by_user(db, user_id=current_user.id)
+    print("LLego ",current_user.id)
+    return get_blogs_by_user(db, current_user.id)
 
 
 @app.post("/category", status_code=201)
@@ -153,3 +159,11 @@ async def get_categ(
     db: Session = Depends(get_db),
 ):
     return await get_categories(db)
+
+
+@app.get("/category/{category_id}", response_model=List[CategoryResponseDTO])
+async def get_category_by_id(
+    category_id: str,
+    db: Session = Depends(get_db),
+):
+    return await get_category_by_id(category_id, db)

@@ -71,8 +71,21 @@ async def create_blog(
     return new_model
 
 
-def get_blogs_by_user(db: Session, user_id: str) -> List[BlogModel]:
-    return db.query(BlogModel).filter(BlogModel.user_id == user_id).all()
+def get_blogs_by_user(db: Session, user_id: str) -> List[BlogResponseDTO]:
+    blogs = db.query(BlogModel).filter(BlogModel.user_id == user_id).all()
+    print("Blogs: ",blogs)
+    blog_response = []
+    for blog in blogs:
+        blog_response.append(BlogResponseDTO(
+            id=blog.id,
+            category=blog.category.name,
+            title=blog.title,
+            content=blog.content,
+            seo_description=blog.seo_description,
+            image_url=blog.image_url,
+            author=blog.user.name + " " + blog.user.last_name,
+        ))
+    return blog_response
 
 def get_blog_by_id(db: Session,  blog_id: str) -> BlogResponseDTO | None  :
    
@@ -110,8 +123,21 @@ def get_blogs(db: Session) -> List[BlogResponseDTO]:
     return blog_response
 
 
-async def get_blogs_by_category(category_id: str, db: Session) -> List[BlogModel] | None:
-    return db.query(BlogModel).filter(CategoryModel.id == category_id).all()
+def get_blogs_by_category( db: Session, category_id: str) -> List[BlogResponseDTO] | None:
+    blogs = db.query(BlogModel).filter(BlogModel.category_id == category_id).all()
+    blog_response = []
+    for blog in blogs:
+        blog_response.append({
+            "id": blog.id,
+            "category": blog.category.name,
+            "title": blog.title,
+            "content": blog.content,
+            "seo_description": blog.seo_description,
+            "image_url": blog.image_url,
+            "author": blog.user.name + " " + blog.user.last_name,
+        })
+    return blog_response
+    
 
 def clean_llm_json_response(raw_response: str) -> str:
     match = re.search(r"```json\s*(\{.*?\})\s*```", raw_response, re.DOTALL)
