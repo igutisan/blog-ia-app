@@ -12,7 +12,7 @@ class BlogModel(Base):
     title = Column(String(50), nullable=False)
     content = Column(String(1000), nullable=False)
     seo_description = Column(String(250), nullable=False)
-    image_url = Column(String(150), nullable=True)
+    image_url = Column(String(600), nullable=True)
     category_id = Column(String, ForeignKey("categories.id"))
     category = relationship("CategoryModel", back_populates="blogs")
     user_id = Column(String, ForeignKey("users.id"))
