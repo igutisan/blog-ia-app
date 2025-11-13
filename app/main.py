@@ -36,9 +36,9 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost",
-    "http://localhost:3000",   
-    "https://midominio.com",   
+    
+    "http://localhost:3000",
+    "v0-blog-application-with-backend.vercel.app",   
 ]
 
 app.add_middleware(
